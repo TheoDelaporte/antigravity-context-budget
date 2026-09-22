@@ -1,0 +1,31 @@
+{
+  "name": "antigravity-context-budget",
+  "version": "1.0.0",
+  "description": "macOS SwiftBar plugin and live Web Dashboard for Antigravity 2.0 Context Budget monitoring",
+  "main": "server.js",
+  "scripts": {
+    "setup": "node scripts/setup.js install",
+    "uninstall": "node scripts/setup.js uninstall",
+    "start": "node server.js",
+    "tracker": "node tracker.30s.js",
+    "daemon": "node src/daemon.js",
+    "daemon:status": "node scripts/daemon-manager.js status",
+    "daemon:install": "node scripts/daemon-manager.js install",
+    "daemon:uninstall": "node scripts/daemon-manager.js uninstall",
+    "daemon:restart": "node scripts/daemon-manager.js restart"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "antigravity",
+    "gemini",
+    "context-budget",
+    "token-monitor",
+    "swiftbar",
+    "macos",
+    "llm-tools"
+  ],
+  "author": "Theo Delaporte",
+  "license": "MIT"
+}

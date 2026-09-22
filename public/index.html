@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity 2.0 · Context Budget Inspector</title>
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & SYSTEM VARIABLES
+       Precision Telemetry HUD Aesthetic - Obsidian & Electric Violet Palette
+       ========================================================================== */
+    :root {
+      --bg-base: #080a0f;
+      --bg-subtle: #0d111a;
+      --surface-1: #131826;
+      --surface-2: #182032;
+      --surface-3: #1f2a42;
+      
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.12);
+      --border-focus: #6366f1;
+
+      --text-high: #f8fafc;
+      --text-medium: #94a3b8;
+      --text-low: #64748b;
+      --text-dim: #475569;
+
+      /* Functional Accent Palette */
+      --accent-primary: #6366f1;       /* Indigo / Primary HUD */
+      --accent-primary-glow: rgba(99, 102, 241, 0.25);
+      --accent-violet: #a855f7;        /* Output / Thinking */
+      --accent-violet-bg: rgba(168, 85, 247, 0.12);
+      --accent-cyan: #06b6d4;          /* MCP Tools */
+      --accent-cyan-bg: rgba(6, 182, 212, 0.12);
+      --accent-emerald: #10b981;       /* Rules / Safe */
+      --accent-emerald-bg: rgba(16, 185, 129, 0.12);
+      --accent-amber: #f59e0b;         /* Skills / Warning */
+      --accent-amber-bg: rgba(245, 158, 11, 0.12);
+      --accent-rose: #f43f5e;          /* Critical */
+      --accent-rose-bg: rgba(244, 63, 94, 0.12);
+
+      --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, "Cascadia Code", monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-high);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+      background-image: 
+        radial-gradient(ellipse 80% 40% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
+        radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.05), transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Container */
+    .app-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 24px;
+    }
+
+    /* ==========================================================================
+       HEADER & NAVIGATION BAR
+       ========================================================================== */
+    header.hud-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: rgba(19, 24, 38, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .hud-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .hud-brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+    }
+    .hud-brand-meta h1 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-version-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--surface-3);
+      color: var(--accent-primary);
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      border: 1px solid var(--border-subtle);
+    }
+    .hud-session-info {
+      font-size: 12px;
+      color: var(--text-medium);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .copy-session-btn {
+      background: none;
+      border: none;
+      color: var(--text-low);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 1px 4px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+    .copy-session-btn:hover {
+      background: var(--surface-3);
+      color: var(--text-high);
+    }
+
+    .hud-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .live-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent-emerald);
+      font-family: var(--font-mono);
+    }
+    .live-status-pill.paused {
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: var(--accent-amber);
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: hud-pulse 2s infinite ease-in-out;
+    }
+    .live-status-pill.paused .pulse-dot {
+      background: var(--accent-amber);
+      box-shadow: none;
+      animation: none;
+    }
+    @keyframes hud-pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .hud-btn {
+      background: var(--surface-2);
+      color: var(--text-high);
+      border: 1px solid var(--border-medium);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: var(--font-sans);
+    }
+    .hud-btn:hover {
+      background: var(--surface-3);
+      border-color: var(--border-focus);
+    }
+    .hud-btn:active {
+      transform: scale(0.98);
+    }
+    .hud-btn.refreshing #refresh-icon {
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ==========================================================================
+       HERO TELEMETRY GAUGE CARD
+       ========================================================================== */
+    .hero-telemetry {
+      background: linear-gradient(180deg, var(--surface-1) 0%, rgba(14, 19, 31, 0.8) 100%);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+    .hero-telemetry::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .hero-metric-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hero-metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-medium);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hero-token-counter {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1.2px;
+      color: var(--text-high);
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-token-max {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-medium);
+      letter-spacing: normal;
+    }
+
+    .hero-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .hero-status-tag.green {
+      background: var(--accent-emerald-bg);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .hero-status-tag.purple {
+      background: var(--accent-violet-bg);
+      color: var(--accent-violet);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .hero-status-tag.orange {
+      background: var(--accent-amber-bg);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .hero-status-tag.red {
+      background: var(--accent-rose-bg);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    /* Segmented Gauge Track */
+    .gauge-track-wrapper {
+      margin-bottom: 16px;
+    }
+    .gauge-track {
+      height: 18px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      position: relative;
+      padding: 2px;
+      gap: 2px;
+    }
+    .gauge-seg {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      cursor: pointer;
+    }
+    .gauge-seg:hover {
+      filter: brightness(1.2);
+    }
+    .gauge-seg.rules { background: var(--accent-emerald); }
+    .gauge-seg.skills { background: var(--accent-amber); }
+    .gauge-seg.mcp { background: var(--accent-cyan); }
+    .gauge-seg.framework { background: var(--accent-primary); }
+    .gauge-seg.history { background: var(--accent-violet); }
+
+    /* Scale markers */
+    .gauge-markers {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 2px 0;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+    }
+
+    /* Interactive Legend Chips */
+    .gauge-legend-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .legend-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .legend-chip:hover {
+      background: var(--surface-2);
+      border-color: var(--border-medium);
+      transform: translateY(-1px);
+    }
+    .legend-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .legend-name {
+      color: var(--text-medium);
+      font-weight: 500;
+    }
+    .legend-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-high);
+    }
+
+    /* Headroom / Remaining Budget Callout */
+    .headroom-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 12px;
+      color: var(--text-medium);
+    }
+    .headroom-remaining {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent-emerald);
+    }
+
+    /* ==========================================================================
+       TELEMETRY STRIP (KPIs)
+       ========================================================================== */
+    .telemetry-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .telemetry-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .telemetry-card:hover {
+      border-color: var(--border-focus);
+      background: var(--surface-2);
+    }
+    .telemetry-header {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-medium);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .telemetry-metric {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    .telemetry-sub {
+      font-size: 11px;
+      color: var(--text-low);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ==========================================================================
+       RECOMMENDATIONS / ADVISORIES
+       ========================================================================== */
+    #recommendations-container:not(:empty) {
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .advisory-box {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-left: 4px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .advisory-box.warning {
+      border-color: rgba(245, 158, 11, 0.3);
+      border-left-color: var(--accent-amber);
+    }
+    .advisory-box.critical {
+      border-color: rgba(244, 63, 94, 0.3);
+      border-left-color: var(--accent-rose);
+    }
+    .advisory-icon {
+      font-size: 18px;
+      line-height: 1;
+      padding-top: 2px;
+    }
+    .advisory-content h4 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--text-high);
+    }
+    .advisory-content p {
+      font-size: 12px;
+      color: var(--text-medium);
+      line-height: 1.45;
+    }
+
+    /* ==========================================================================
+       SEGMENTED TABS
+       ========================================================================== */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      background: var(--surface-1);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .tab-item {
+      background: transparent;
+      border: none;
+      color: var(--text-medium);
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      font-family: var(--font-sans);
+    }
+    .tab-item:hover {
+      color: var(--text-high);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-item.active {
+      background: var(--surface-3);
+      color: var(--text-high);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .tab-counter {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-medium);
+    }
+    .tab-item.active .tab-counter {
+      background: var(--accent-primary-glow);
+      color: #c7d2fe;
+    }
+
+    /* Content Panes */
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       DATA CARDS & TABLES
+       ========================================================================== */
+    .panel-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .panel-toolbar {
+      padding: 14px 20px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border-medium);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-toolbar h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-high);
+      letter-spacing: -0.1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-filter-input {
+      background: var(--bg-base);
+      border: 1px solid var(--border-medium);
+      color: var(--text-high);
+      padding: 6px 12px 6px 30px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      outline: none;
+      width: 240px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 8px center;
+      font-family: var(--font-sans);
+      transition: all 0.15s ease;
+    }
+    .search-filter-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px var(--accent-primary-glow);
+    }
+
+    /* Structured Table */
+    .hud-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+    .hud-table th {
+      padding: 11px 20px;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text-low);
+      font-weight: 600;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-medium);
+    }
+    .hud-table td {
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+      color: var(--text-high);
+    }
+    .hud-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge.emerald { background: var(--accent-emerald-bg); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge.amber   { background: var(--accent-amber-bg);   color: var(--accent-amber);   border: 1px solid rgba(245, 158, 11, 0.25); }
+    .badge.cyan    { background: var(--accent-cyan-bg);    color: var(--accent-cyan);    border: 1px solid rgba(6, 182, 212, 0.25); }
+    .badge.violet  { background: var(--accent-violet-bg);  color: var(--accent-violet);  border: 1px solid rgba(168, 85, 247, 0.25); }
+    .badge.indigo  { background: rgba(99, 102, 241, 0.12); color: #818cf8;             border: 1px solid rgba(99, 102, 241, 0.25); }
+    .badge.subtle  { background: var(--surface-3);         color: var(--text-medium);    border: 1px solid var(--border-subtle); }
+
+    /* ==========================================================================
+       RULES INSPECTOR STYLING
+       ========================================================================== */
+    .rule-card {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.15s ease;
+    }
+    .rule-card:last-child { border-bottom: none; }
+    .rule-card:hover { background: rgba(255, 255, 255, 0.015); }
+    .rule-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .rule-tag {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-emerald);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rule-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rule-copy-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-low);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .rule-copy-btn:hover {
+      background: var(--surface-3);
+      color: var(--text-high);
+      border-color: var(--border-medium);
+    }
+    .rule-content-viewer {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-medium);
+      white-space: pre-wrap;
+      max-height: 190px;
+      overflow-y: auto;
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       MCP ACCORDION STYLING
+       ========================================================================== */
+    .mcp-item {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .mcp-item:last-child { border-bottom: none; }
+    .mcp-header-row {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .mcp-header-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .mcp-title {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mcp-disclosure-arrow {
+      font-size: 10px;
+      color: var(--text-low);
+      transition: transform 0.2s ease;
+    }
+    .mcp-item.open .mcp-disclosure-arrow {
+      transform: rotate(180deg);
+    }
+    .mcp-tray {
+      padding: 16px 20px 20px;
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--border-subtle);
+      display: none;
+    }
+    .mcp-item.open .mcp-tray {
+      display: block;
+    }
+    .tool-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .tool-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tool-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tool-card-name {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-high);
+    }
+    .tool-card-desc {
+      font-size: 11px;
+      color: var(--text-low);
+      line-height: 1.35;
+      max-height: 48px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ==========================================================================
+       CONVERSATION TURNS TIMELINE
+       ========================================================================== */
+    .turns-list {
+      padding: 8px 20px;
+    }
+    .turn-row {
+      display: grid;
+      grid-template-columns: 50px 130px 90px 1fr 100px;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12px;
+    }
+    .turn-row:last-child { border-bottom: none; }
+    .turn-index {
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .turn-tokens {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .turn-bar-track {
+      background: var(--surface-3);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .turn-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .turn-tool-count {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-low);
+      font-family: var(--font-mono);
+    }
+
+    /* Toast Notification */
+    .hud-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface-3);
+      border: 1px solid var(--accent-primary);
+      color: var(--text-high);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .hud-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- TOP HUD BAR -->
+    <header class="hud-header">
+      <div class="hud-brand">
+        <div class="hud-brand-icon">🧠</div>
+        <div class="hud-brand-meta">
+          <h1>
+            Antigravity Context Inspector
+            <span class="hud-version-badge">2.0 HUD</span>
+          </h1>
+          <div class="hud-session-info">
+            <span id="session-label">Session: Chargement...</span>
+            <button class="copy-session-btn" id="copy-session-btn" onclick="copySessionId()" title="Copier l'ID de session">📋 Copier</button>
+            <span style="color: var(--border-medium);">•</span>
+            <span id="last-updated-label">En attente des données...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <div class="live-status-pill" id="live-status-pill">
+          <span class="pulse-dot"></span>
+          <span id="poll-state-text">Télémétrie Live</span>
+        </div>
+        <button class="hud-btn" id="toggle-poll-btn" onclick="togglePolling()">⏸ Pause</button>
+        <button class="hud-btn" id="refresh-btn" onclick="manualRefresh()">
+          <span id="refresh-icon">🔄</span> Actualiser
+        </button>
+      </div>
+    </header>
+
+    <!-- HERO CONTEXT TELEMETRY GAUGE -->
+    <section class="hero-telemetry">
+      <div class="hero-header-row">
+        <div class="hero-metric-group">
+          <span class="hero-metric-label">
+            <span>Volume Actuel du Contexte</span>
+            <span style="color: var(--border-medium);">·</span>
+            <span id="hero-percentage">0.0% utilisé</span>
+          </span>
+          <div class="hero-token-counter">
+            <span id="hero-total-tokens">0</span>
+            <span class="hero-token-max" id="hero-max-budget">/ 1,000,000 tokens</span>
+          </div>
+        </div>
+        <div id="hero-status-pill" class="hero-status-tag green">Connexion à la session...</div>
+      </div>
+
+      <!-- Segmented Bar Track -->
+      <div class="gauge-track-wrapper">
+        <div class="gauge-track" id="gauge-track">
+          <div class="gauge-seg rules" id="seg-rules" title="Rules" onclick="switchTab('tab-rules')"></div>
+          <div class="gauge-seg skills" id="seg-skills" title="Skills" onclick="switchTab('tab-skills')"></div>
+          <div class="gauge-seg mcp" id="seg-mcp" title="MCP Servers" onclick="switchTab('tab-mcp')"></div>
+          <div class="gauge-seg framework" id="seg-framework" title="Guidelines & Framework" onclick="switchTab('tab-framework')"></div>
+          <div class="gauge-seg history" id="seg-history" title="Historique & Output" onclick="switchTab('tab-history')"></div>
+        </div>
+        <div class="gauge-markers">
+          <span>0</span>
+          <span>250k (25%)</span>
+          <span>500k (50%)</span>
+          <span>750k (Alerte 75%)</span>
+          <span>900k (Zone Critique)</span>
+          <span>1M Max</span>
+        </div>
+      </div>
+
+      <!-- Interactive Legend Chips -->
+      <div class="gauge-legend-grid">
+        <div class="legend-chip" onclick="switchTab('tab-rules')" title="Cliquer pour inspecter les règles">
+          <div class="legend-indicator" style="background: var(--accent-emerald);"></div>
+          <span class="legend-name">Règles</span>
+          <span class="legend-value" id="leg-rules">0</span>
+        </div>
+        <div class="legend-chip" onclick="switchTab('tab-skills')" title="Cliquer pour inspecter les skills">
+          <div class="legend-indicator" style="background: var(--accent-amber);"></div>
+          <span class="legend-name">Skills</span>
+          <span class="legend-value" id="leg-skills">0</span>
+        </div>
+        <div class="legend-chip" onclick="switchTab('tab-mcp')" title="Cliquer pour inspecter les serveurs MCP">
+          <div class="legend-indicator" style="background: var(--accent-cyan);"></div>
+          <span class="legend-name">MCP Tools</span>
+          <span class="legend-value" id="leg-mcp">0</span>
+        </div>
+        <div class="legend-chip" onclick="switchTab('tab-framework')" title="Cliquer pour inspecter le framework">
+          <div class="legend-indicator" style="background: var(--accent-primary);"></div>
+          <span class="legend-name">Framework Protocol</span>
+          <span class="legend-value" id="leg-framework">0</span>
+        </div>
+        <div class="legend-chip" onclick="switchTab('tab-history')" title="Cliquer pour inspecter les échanges">
+          <div class="legend-indicator" style="background: var(--accent-violet);"></div>
+          <span class="legend-name">Output & Thinking</span>
+          <span class="legend-value" id="leg-history">0</span>
+        </div>
+      </div>
+
+      <!-- Headroom Stats -->
+      <div class="headroom-meta">
+        <div>
+          <span>Marge restante avant saturation : </span>
+          <span class="headroom-remaining" id="headroom-remaining">1,000,000 tokens</span>
+        </div>
+        <div style="font-size: 11px; color: var(--text-dim);" id="ratio-summary">
+          Ratio Input / Output : 0% / 0%
+        </div>
+      </div>
+    </section>
+
+    <!-- ADVISORIES & RECOMMENDATIONS -->
+    <div id="recommendations-container"></div>
+
+    <!-- TELEMETRY KPI STRIP -->
+    <div class="telemetry-strip">
+      <div class="telemetry-card">
+        <div class="telemetry-header">Total Prompt Input <span>Prompt</span></div>
+        <div class="telemetry-metric" id="kpi-input" style="color: #818cf8;">0</div>
+        <div class="telemetry-sub" id="kpi-input-sub">0% du contexte total</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-header">Total Output <span>Généré</span></div>
+        <div class="telemetry-metric" id="kpi-output" style="color: var(--accent-violet);">0</div>
+        <div class="telemetry-sub" id="kpi-output-sub">0 think / 0 texte</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-header">Règles Actives <span>Rules</span></div>
+        <div class="telemetry-metric" id="kpi-rules" style="color: var(--accent-emerald);">0</div>
+        <div class="telemetry-sub" id="kpi-rules-sub">0 règle(s) chargée(s)</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-header">Skills Déclarés <span>Skills</span></div>
+        <div class="telemetry-metric" id="kpi-skills" style="color: var(--accent-amber);">0</div>
+        <div class="telemetry-sub" id="kpi-skills-sub">0 compétence(s)</div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-header">Outils MCP <span>Tools</span></div>
+        <div class="telemetry-metric" id="kpi-mcp" style="color: var(--accent-cyan);">0</div>
+        <div class="telemetry-sub" id="kpi-mcp-sub">0 serveur(s) MCP</div>
+      </div>
+    </div>
+
+    <!-- SEGMENTED TABS -->
+    <nav class="tabs-bar">
+      <button class="tab-item active" id="tab-btn-skills" onclick="switchTab('tab-skills')">
+        <span>⚡ Skills & Plugins</span>
+        <span class="tab-counter" id="tab-skills-count">0</span>
+      </button>
+      <button class="tab-item" id="tab-btn-mcp" onclick="switchTab('tab-mcp')">
+        <span>🔌 Serveurs MCP</span>
+        <span class="tab-counter" id="tab-mcp-count">0</span>
+      </button>
+      <button class="tab-item" id="tab-btn-rules" onclick="switchTab('tab-rules')">
+        <span>📜 Règles d'Ingénierie</span>
+        <span class="tab-counter" id="tab-rules-count">0</span>
+      </button>
+      <button class="tab-item" id="tab-btn-framework" onclick="switchTab('tab-framework')">
+        <span>🏛 Protocole Système</span>
+      </button>
+      <button class="tab-item" id="tab-btn-history" onclick="switchTab('tab-history')">
+        <span>💬 Historique des Tours</span>
+        <span class="tab-counter" id="tab-turns-count">0</span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: SKILLS -->
+    <div id="tab-skills" class="tab-pane active">
+      <div class="panel-card">
+        <div class="panel-toolbar">
+          <h3>
+            <span>Compétences déclarées dans le prompt</span>
+            <span class="badge subtle" id="skills-summary-badge">0 injectés</span>
+          </h3>
+          <input type="text" class="search-filter-input" id="skills-search" placeholder="Rechercher une compétence..." oninput="filterSkills()">
+        </div>
+        <table class="hud-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Nom de la compétence</th>
+              <th style="width: 150px;">Empreinte Prompt</th>
+              <th style="width: 170px;">Poids Réel (Disque)</th>
+              <th>Description & Rôle</th>
+            </tr>
+          </thead>
+          <tbody id="skills-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: MCP SERVERS -->
+    <div id="tab-mcp" class="tab-pane">
+      <div class="panel-card">
+        <div class="panel-toolbar">
+          <h3>
+            <span>Serveurs MCP et outils exposés</span>
+            <span class="badge subtle" id="mcp-summary-badge">0 serveurs</span>
+          </h3>
+          <input type="text" class="search-filter-input" id="mcp-search" placeholder="Filtrer un outil ou serveur..." oninput="filterMcp()">
+        </div>
+        <div id="mcp-servers-container"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: RULES -->
+    <div id="tab-rules" class="tab-pane">
+      <div class="panel-card">
+        <div class="panel-toolbar">
+          <h3>
+            <span>Directives & Règles d'ingénierie actives</span>
+            <span class="badge subtle" id="rules-summary-badge">0 règles</span>
+          </h3>
+          <input type="text" class="search-filter-input" id="rules-search" placeholder="Rechercher dans les règles..." oninput="filterRules()">
+        </div>
+        <div id="rules-list-container"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SYSTEM FRAMEWORK -->
+    <div id="tab-framework" class="tab-pane">
+      <div class="panel-card">
+        <div class="panel-toolbar">
+          <h3>
+            <span>Composants Système & Protocole Antigravity</span>
+          </h3>
+        </div>
+        <table class="hud-table">
+          <thead>
+            <tr>
+              <th>Composant Système</th>
+              <th>Balise XML</th>
+              <th>Caractères</th>
+              <th>Poids Tokens</th>
+            </tr>
+          </thead>
+          <tbody id="framework-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: HISTORY & TURNS -->
+    <div id="tab-history" class="tab-pane">
+      <div class="panel-card">
+        <div class="panel-toolbar">
+          <h3>
+            <span>Progression du Contexte par Tour d'Échange</span>
+            <span class="badge subtle" id="turns-summary-label">40 derniers pas</span>
+          </h3>
+        </div>
+        <div class="turns-list" id="timeline-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="hud-toast" id="hud-toast">
+    <span id="toast-message">Action effectuée</span>
+  </div>
+
+  <script>
+    let currentData = null;
+    let isPolling = true;
+    let pollInterval = null;
+
+    function formatNumber(n) {
+      if (typeof n !== 'number' || isNaN(n)) return '0';
+      return n.toLocaleString('fr-FR');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('hud-toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function copySessionId() {
+      if (!currentData || !currentData.session) return;
+      navigator.clipboard.writeText(currentData.session.id).then(() => {
+        showToast(`ID de session copié : ${currentData.session.id.substring(0, 8)}...`);
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+
+      const btn = document.getElementById(`tab-btn-${tabId.replace('tab-', '')}`);
+      if (btn) btn.classList.add('active');
+    }
+
+    function togglePolling() {
+      isPolling = !isPolling;
+      const btn = document.getElementById('toggle-poll-btn');
+      const pill = document.getElementById('live-status-pill');
+      const text = document.getElementById('poll-state-text');
+
+      if (isPolling) {
+        btn.textContent = '⏸ Pause';
+        pill.classList.remove('paused');
+        text.textContent = 'Télémétrie Live';
+        startPolling();
+        showToast('Télémétrie en direct réactivée');
+      } else {
+        btn.textContent = '▶ Reprendre';
+        pill.classList.add('paused');
+        text.textContent = 'En Pause';
+        clearInterval(pollInterval);
+        showToast('Télémétrie mise en pause');
+      }
+    }
+
+    async function manualRefresh() {
+      const btn = document.getElementById('refresh-btn');
+      btn.classList.add('refreshing');
+      await fetchMetrics();
+      setTimeout(() => btn.classList.remove('refreshing'), 600);
+      showToast('Données actualisées');
+    }
+
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/api/metrics');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        currentData = data;
+        renderDashboard(data);
+      } catch (err) {
+        console.error('Erreur API:', err);
+      }
+    }
+
+    function renderDashboard(data) {
+      if (!data || !data.budget) return;
+
+      const { budget, breakdown, session, recommendations } = data;
+
+      // Header Session Info
+      document.getElementById('session-label').textContent = `Session: ${session.id.substring(0, 16)}...`;
+      document.getElementById('last-updated-label').textContent = 
+        `Actualisé à ${new Date(session.lastUpdated).toLocaleTimeString()}`;
+
+      // Hero Total & Max
+      document.getElementById('hero-total-tokens').textContent = formatNumber(budget.current);
+      document.getElementById('hero-max-budget').textContent = `/ ${formatNumber(budget.max)} tokens (${budget.percentage}%)`;
+      document.getElementById('hero-percentage').textContent = `${budget.percentage}% utilisé`;
+
+      const pill = document.getElementById('hero-status-pill');
+      pill.textContent = budget.statusLabel;
+      pill.className = `hero-status-tag ${budget.statusColor}`;
+
+      // Progress Bar Segments
+      const max = budget.max;
+      const rulesP = ((breakdown.rules.totalTokens / max) * 100).toFixed(2);
+      const skillsP = ((breakdown.skills.totalInPromptTokens / max) * 100).toFixed(2);
+      const mcpP = ((breakdown.mcp.totalInPromptTokens / max) * 100).toFixed(2);
+      const frameP = ((breakdown.framework.totalTokens / max) * 100).toFixed(2);
+      const histP = ((budget.output / max) * 100).toFixed(2);
+
+      document.getElementById('seg-rules').style.width = rulesP + '%';
+      document.getElementById('seg-skills').style.width = skillsP + '%';
+      document.getElementById('seg-mcp').style.width = mcpP + '%';
+      document.getElementById('seg-framework').style.width = frameP + '%';
+      document.getElementById('seg-history').style.width = histP + '%';
+
+      // Legends Values
+      document.getElementById('leg-rules').textContent = `${formatNumber(breakdown.rules.totalTokens)} tok (${rulesP}%)`;
+      document.getElementById('leg-skills').textContent = `${formatNumber(breakdown.skills.totalInPromptTokens)} tok (${skillsP}%)`;
+      document.getElementById('leg-mcp').textContent = `${formatNumber(breakdown.mcp.totalInPromptTokens)} tok (${mcpP}%)`;
+      document.getElementById('leg-framework').textContent = `${formatNumber(breakdown.framework.totalTokens)} tok (${frameP}%)`;
+      document.getElementById('leg-history').textContent = `${formatNumber(budget.output)} tok (${histP}%)`;
+
+      // Headroom Calculation
+      const remainingTokens = Math.max(0, budget.max - budget.current);
+      document.getElementById('headroom-remaining').textContent = 
+        `${formatNumber(remainingTokens)} tokens restants (${((remainingTokens / max) * 100).toFixed(1)}%)`;
+
+      const inputP = ((budget.input / budget.current) * 100).toFixed(0);
+      const outputP = (100 - inputP).toFixed(0);
+      document.getElementById('ratio-summary').textContent = `Ratio Prompt / Modèle : ${inputP}% / ${outputP}%`;
+
+      // KPIs Strip
+      document.getElementById('kpi-input').textContent = formatNumber(budget.input);
+      document.getElementById('kpi-input-sub').textContent = `${((budget.input / max) * 100).toFixed(1)}% du budget total`;
+
+      document.getElementById('kpi-output').textContent = formatNumber(budget.output);
+      document.getElementById('kpi-output-sub').textContent = 
+        `${formatNumber(breakdown.history.thinkingTokens)} think / ${formatNumber(breakdown.history.contentTokens)} texte`;
+
+      document.getElementById('kpi-rules').textContent = formatNumber(breakdown.rules.totalTokens);
+      document.getElementById('kpi-rules-sub').textContent = `${breakdown.rules.items.length} règle(s) active(s)`;
+
+      document.getElementById('kpi-skills').textContent = formatNumber(breakdown.skills.totalInPromptTokens);
+      document.getElementById('kpi-skills-sub').textContent = `${breakdown.skills.count} compétences déclarées`;
+
+      document.getElementById('kpi-mcp').textContent = formatNumber(breakdown.mcp.totalInPromptTokens);
+      document.getElementById('kpi-mcp-sub').textContent = `${breakdown.mcp.serverCount} serveurs MCP connectés`;
+
+      // Tabs Counters
+      document.getElementById('tab-skills-count').textContent = breakdown.skills.count;
+      document.getElementById('tab-mcp-count').textContent = breakdown.mcp.serverCount;
+      document.getElementById('tab-rules-count').textContent = breakdown.rules.items.length;
+      document.getElementById('tab-turns-count').textContent = breakdown.history.stepsCount;
+
+      document.getElementById('skills-summary-badge').textContent = `${breakdown.skills.count} skills`;
+      document.getElementById('mcp-summary-badge').textContent = `${breakdown.mcp.serverCount} serveurs`;
+      document.getElementById('rules-summary-badge').textContent = `${breakdown.rules.items.length} règles`;
+
+      // Recommendations
+      renderRecommendations(recommendations);
+
+      // Render Sub-components
+      renderSkills(breakdown.skills.items);
+      renderMcp(breakdown.mcp.servers);
+      renderRules(breakdown.rules.items);
+      renderFramework(breakdown.framework.components);
+      renderHistory(breakdown.history.turns);
+    }
+
+    function renderRecommendations(recs) {
+      const cont = document.getElementById('recommendations-container');
+      if (!recs || recs.length === 0) {
+        cont.innerHTML = '';
+        return;
+      }
+      cont.innerHTML = recs.map(r => `
+        <div class="advisory-box ${r.severity === 'high' ? 'critical' : (r.severity === 'medium' ? 'warning' : '')}">
+          <div class="advisory-icon">${r.severity === 'high' ? '🚨' : '💡'}</div>
+          <div class="advisory-content">
+            <h4>${escapeHtml(r.title)}</h4>
+            <p>${escapeHtml(r.message)}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSkills(items) {
+      const tbody = document.getElementById('skills-table-body');
+      tbody.innerHTML = items.map(s => `
+        <tr data-name="${s.name.toLowerCase()}" data-desc="${(s.desc || '').toLowerCase()}">
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--accent-amber); font-size: 14px;">⚡</span>
+              <strong style="font-family: var(--font-mono); color: var(--accent-amber); font-size: 12.5px;">${s.name}</strong>
+            </div>
+          </td>
+          <td><span class="badge amber">${formatNumber(s.inPromptTokens)} tok</span></td>
+          <td>
+            ${s.fileExists 
+              ? `<span class="badge subtle">${formatNumber(s.fileTokens)} tok</span> <span style="font-size:11px; color:var(--text-low); margin-left:4px;">(${(s.fileSizeBytes/1024).toFixed(1)} KB)</span>` 
+              : `<span style="color:var(--text-dim); font-size:11px;">Intégré</span>`}
+          </td>
+          <td style="color: var(--text-medium); font-size: 12px; line-height: 1.4;">${escapeHtml(s.desc || '')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterSkills() {
+      const q = document.getElementById('skills-search').value.toLowerCase();
+      document.querySelectorAll('#skills-table-body tr').forEach(row => {
+        const name = row.getAttribute('data-name') || '';
+        const desc = row.getAttribute('data-desc') || '';
+        row.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
+      });
+    }
+
+    function renderMcp(servers) {
+      const cont = document.getElementById('mcp-servers-container');
+      cont.innerHTML = servers.map((s, idx) => `
+        <div class="mcp-item" data-server="${s.name.toLowerCase()}">
+          <div class="mcp-header-row" onclick="toggleMcpDetails(${idx})">
+            <div class="mcp-title">
+              <span># ${s.name}</span>
+              <span class="badge cyan">${s.totalTools} outil(s)</span>
+              ${s.diskTotalTokens > 0 ? `<span class="badge subtle">Schémas disque: ~${formatNumber(s.diskTotalTokens)} tok</span>` : ''}
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge indigo">${formatNumber(s.inPromptTokens)} tok prompt</span>
+              <span class="mcp-disclosure-arrow" id="mcp-arrow-${idx}">▼</span>
+            </div>
+          </div>
+          <div class="mcp-tray" id="mcp-tray-${idx}">
+            <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-medium); margin-bottom: 8px;">
+              Catalogue d'outils disponibles :
+            </div>
+            <div class="tool-cards-grid">
+              ${s.tools.length > 0 
+                ? s.tools.map(t => `
+                    <div class="tool-card" data-tool="${t.name.toLowerCase()}">
+                      <div class="tool-card-head">
+                        <span class="tool-card-name">${t.name}</span>
+                        <span class="badge cyan">${formatNumber(t.tokens)} tok</span>
+                      </div>
+                      <p class="tool-card-desc" title="${escapeHtml(t.description || '')}">
+                        ${escapeHtml(t.description || 'Outil MCP natif')}
+                      </p>
+                    </div>
+                  `).join('')
+                : (s.lazyTools.concat(s.eagerTools)).map(name => `
+                    <div class="tool-card">
+                      <div class="tool-card-head">
+                        <span class="tool-card-name">${name}</span>
+                        <span class="badge subtle">Déclaré</span>
+                      </div>
+                    </div>
+                  `).join('')
+              }
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleMcpDetails(idx) {
+      const item = document.querySelectorAll('.mcp-item')[idx];
+      if (item) item.classList.toggle('open');
+    }
+
+    function filterMcp() {
+      const q = document.getElementById('mcp-search').value.toLowerCase();
+      document.querySelectorAll('.mcp-item').forEach(el => {
+        const serverName = el.getAttribute('data-server') || '';
+        const hasMatchingTool = Array.from(el.querySelectorAll('.tool-card')).some(tc => {
+          const tName = tc.getAttribute('data-tool') || '';
+          return tName.includes(q);
+        });
+        if (serverName.includes(q) || hasMatchingTool) {
+          el.style.display = '';
+          if (q.length > 0) el.classList.add('open');
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    function renderRules(rules) {
+      const cont = document.getElementById('rules-list-container');
+      if (rules.length === 0) {
+        cont.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-low);">Aucune règle personnalisée déclarée.</div>';
+        return;
+      }
+      cont.innerHTML = rules.map((r, idx) => `
+        <div class="rule-card" data-rule="${r.name.toLowerCase()}">
+          <div class="rule-head">
+            <div class="rule-tag">
+              <span>📜</span>
+              <span>&lt;RULE[${r.name}]&gt;</span>
+            </div>
+            <div class="rule-actions">
+              <span class="badge emerald">${formatNumber(r.tokens)} tokens</span>
+              <span class="badge subtle">${formatNumber(r.chars)} car. (${r.percentage}%)</span>
+              <button class="rule-copy-btn" onclick="copyRuleText(${idx})">Copier le texte</button>
+            </div>
+          </div>
+          <div class="rule-content-viewer" id="rule-body-${idx}">${escapeHtml(r.fullContent)}</div>
+        </div>
+      `).join('');
+    }
+
+    function copyRuleText(idx) {
+      if (!currentData || !currentData.breakdown.rules.items[idx]) return;
+      const rule = currentData.breakdown.rules.items[idx];
+      navigator.clipboard.writeText(rule.fullContent).then(() => {
+        showToast(`Règle "${rule.name}" copiée dans le presse-papier !`);
+      });
+    }
+
+    function filterRules() {
+      const q = document.getElementById('rules-search').value.toLowerCase();
+      document.querySelectorAll('.rule-card').forEach(el => {
+        const name = el.getAttribute('data-rule') || '';
+        const body = el.querySelector('.rule-content-viewer')?.textContent.toLowerCase() || '';
+        el.style.display = (name.includes(q) || body.includes(q)) ? '' : 'none';
+      });
+    }
+
+    function renderFramework(components) {
+      const tbody = document.getElementById('framework-table-body');
+      tbody.innerHTML = components.map(c => `
+        <tr>
+          <td><strong style="color: var(--text-high);">${c.label}</strong></td>
+          <td><code style="color: #818cf8; font-family: var(--font-mono); font-size: 11.5px;">&lt;${c.tag}&gt;</code></td>
+          <td style="font-family: var(--font-mono); color: var(--text-medium);">${formatNumber(c.chars)}</td>
+          <td><span class="badge indigo">${formatNumber(c.tokens)} tok</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderHistory(turns) {
+      const cont = document.getElementById('timeline-container');
+      if (!turns || turns.length === 0) {
+        cont.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-low);">Aucun échange enregistré.</div>';
+        return;
+      }
+
+      const maxStepTokens = Math.max(...turns.map(t => t.stepTokens || 1), 1);
+      cont.innerHTML = turns.map(t => {
+        const p = Math.max(4, Math.round((t.stepTokens / maxStepTokens) * 100));
+        const isModel = t.type === 'PLANNER_RESPONSE';
+        const badgeColor = isModel ? 'violet' : 'emerald';
+
+        return `
+          <div class="turn-row">
+            <div class="turn-index">#${t.index}</div>
+            <div>
+              <span class="badge ${badgeColor}">${t.type === 'PLANNER_RESPONSE' ? 'Modèle' : 'Utilisateur'}</span>
+            </div>
+            <div class="turn-tokens" style="color: ${isModel ? 'var(--accent-violet)' : 'var(--accent-emerald)'};">
+              ${formatNumber(t.stepTokens)} tok
+            </div>
+            <div class="turn-bar-track">
+              <div class="turn-bar-fill" style="width: ${p}%; background: ${isModel ? 'var(--accent-violet)' : 'var(--accent-emerald)'};"></div>
+            </div>
+            <div class="turn-tool-count">
+              ${t.toolCallsCount > 0 ? `🛠 ${t.toolCallsCount} outil(s)` : '<span style="color: var(--text-dim);">-</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(fetchMetrics, 2500);
+    }
+
+    // Initial load
+    fetchMetrics();
+    startPolling();
+  </script>
+</body>
+</html>

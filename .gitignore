@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Project runtime logs
+logs/
+*.log
+
+# Local environment & scratch
+.env
+.env.local
+scratch/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo

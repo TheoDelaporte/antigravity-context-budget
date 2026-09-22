@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-09-22T10:00:00.000Z",
+  "usage": {
+    "input_tokens": 12450,
+    "output_tokens": 2750,
+    "total_tokens": 15200
+  },
+  "breakdown": {
+    "rules": 2100,
+    "skills": 4300,
+    "mcp": 3200
+  }
+}

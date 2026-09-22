@@ -1,0 +1,2 @@
+{"step": 1, "usage": {"input_tokens": 1000, "output_tokens": 200, "total_tokens": 1200}, "breakdown": {"rules": 300, "skills": 400, "mcp": 500}}
+{"step": 2, "usage": {"input_tokens": 5400, "output_tokens": 1200, "total_tokens": 6600}, "breakdown": {"rules": 1200, "skills": 2500, "mcp": 1700}}
