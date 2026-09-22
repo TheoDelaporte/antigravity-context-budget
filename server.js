@@ -74,6 +74,20 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Route 4 : Favicon (SVG & fallback ICO)
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/favicon.svg' || pathname === '/favicon.ico')) {
+    const faviconPath = path.join(PUBLIC_DIR, 'favicon.svg');
+    if (!fs.existsSync(faviconPath)) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Favicon non trouvé');
+      return;
+    }
+    const svg = fs.readFileSync(faviconPath);
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
+    res.end(req.method === 'HEAD' ? null : svg);
+    return;
+  }
+
   // 404 par défaut
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not Found');
