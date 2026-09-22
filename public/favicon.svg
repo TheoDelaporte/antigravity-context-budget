@@ -1,36 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <defs>
-    <linearGradient id="hudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1" />
-      <stop offset="100%" stop-color="#c084fc" />
-    </linearGradient>
-    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="rgba(99, 102, 241, 0.35)" />
-      <stop offset="100%" stop-color="rgba(99, 102, 241, 0)" />
-    </radialGradient>
-  </defs>
-  
-  <!-- Outer Rounded Container -->
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#080a0f" stroke="#1f2a42" stroke-width="2.5" />
-  <circle cx="32" cy="32" r="22" fill="url(#glowGrad)" />
-
-  <!-- Brain & Telemetry Network Vector -->
-  <g fill="none" stroke="url(#hudGrad)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Left Hemisphere -->
-    <path d="M29 17 C21 17 16 22 16 28 C16 31 18 34 20 35 C17 38 17 42 20 45 C22 47 25 47 29 45" />
-    <path d="M20 28 C23 28 26 31 26 35" />
-    <path d="M20 41 C23 41 26 38 26 35" />
-    
-    <!-- Right Hemisphere -->
-    <path d="M35 17 C43 17 48 22 48 28 C48 31 46 34 44 35 C47 38 47 42 44 45 C42 47 39 47 35 45" />
-    <path d="M44 28 C41 28 38 31 38 35" />
-    <path d="M44 41 C41 41 38 38 38 35" />
-
-    <!-- Central Neural Divider -->
-    <line x1="32" y1="18" x2="32" y2="44" stroke="#818cf8" stroke-width="2" stroke-dasharray="2 3" />
-  </g>
-
-  <!-- Telemetry Indicator Nodes -->
-  <circle cx="32" cy="17" r="2.2" fill="#10b981" />
-  <circle cx="32" cy="45" r="2.2" fill="#06b6d4" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <text y=".9em" font-size="90" x="5">🧠</text>
 </svg>
