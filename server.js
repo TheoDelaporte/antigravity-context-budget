@@ -10,7 +10,58 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFile } = require('node:child_process');
 const { getDetailedMetrics } = require('./src/analyzer');
+
+/**
+ * Exécute `rtk gain` et parse la sortie texte en objet JSON structuré.
+ * @returns {Promise<Object>}
+ */
+function getRtkGain() {
+  return new Promise((resolve, reject) => {
+    execFile('/opt/homebrew/bin/rtk', ['gain'], {
+      timeout: 10_000,
+      shell: false,
+      env: { ...process.env, PATH: (process.env.PATH || '') + ':/opt/homebrew/bin:/usr/local/bin' },
+    }, (err, stdout, stderr) => {
+      if (err) {
+        return reject(new Error(stderr || err.message));
+      }
+      const text = stdout;
+
+      // Parser les métriques globales
+      const totalCommands = Number((text.match(/Total commands:\s+(\d+)/) || [])[1] ?? 0);
+      const inputTokens   = Number((text.match(/Input tokens:\s+([\d,]+)/)  || [])[1]?.replace(/,/g, '') ?? 0);
+      const outputTokens  = Number((text.match(/Output tokens:\s+([\d,]+)/) || [])[1]?.replace(/,/g, '') ?? 0);
+      const savedMatch    = text.match(/Tokens saved:\s+([\d,]+)\s+\(([\d.]+)%\)/);
+      const tokensSaved   = Number((savedMatch?.[1] ?? '0').replace(/,/g, ''));
+      const savingsPct    = parseFloat(savedMatch?.[2] ?? '0');
+      const execTimeMatch = text.match(/Total exec time:\s+(\d+)ms\s+\(avg\s+(\d+)ms\)/);
+      const totalExecMs   = Number(execTimeMatch?.[1] ?? 0);
+      const avgExecMs     = Number(execTimeMatch?.[2] ?? 0);
+
+      // Parser le tableau "By Command"
+      const commands = [];
+      const tableLines = text.split('\n').filter(l => /^\s+\d+\./.test(l));
+      for (const line of tableLines) {
+        // Format:  1.  rtk ls /path      1    110   80.9%     9ms  ██████████
+        const m = line.match(/^\s+(\d+)\.\s+(.+?)\s{2,}(\d+)\s+([\d,]+)\s+([\d.]+)%\s+(\d+)ms/);
+        if (m) {
+          commands.push({
+            rank:    Number(m[1]),
+            command: m[2].trim(),
+            count:   Number(m[3]),
+            saved:   Number(m[4].replace(/,/g, '')),
+            avgPct:  parseFloat(m[5]),
+            timeMs:  Number(m[6]),
+          });
+        }
+      }
+
+      resolve({ totalCommands, inputTokens, outputTokens, tokensSaved, savingsPct, totalExecMs, avgExecMs, commands, raw: text });
+    });
+  });
+}
 
 const PORT = parseInt(process.env.PORT || '3456', 10);
 const HOST = '127.0.0.1'; // Sécurité stricte : localhost uniquement
@@ -52,6 +103,26 @@ const server = http.createServer((req, res) => {
     }
     return;
   }
+
+  // Route 1b : RTK Gain – économies de tokens RTK
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/rtk-gain') {
+    if (req.method === 'HEAD') {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(null);
+      return;
+    }
+    getRtkGain()
+      .then(data => {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify(data));
+      })
+      .catch(err => {
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: err.message }));
+      });
+    return;
+  }
+
 
   // Route 2 : Healthcheck
   if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/health') {

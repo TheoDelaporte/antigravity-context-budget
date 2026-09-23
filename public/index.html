@@ -883,7 +883,201 @@
       transform: translateY(0);
       opacity: 1;
     }
+
+    /* ==========================================================================
+       RTK GAIN WIDGET
+       ========================================================================== */
+    .rtk-gain-panel {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(6, 182, 212, 0.04) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+    }
+    .rtk-gain-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .rtk-gain-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .rtk-gain-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .rtk-gain-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-high);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rtk-gain-scope {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 1px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--accent-emerald);
+      font-weight: 500;
+    }
+    .rtk-gain-desc {
+      font-size: 11px;
+      color: var(--text-low);
+      margin-top: 2px;
+    }
+
+    .rtk-gain-kpis {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rtk-kpi-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      min-width: 110px;
+      text-align: center;
+    }
+    .rtk-kpi-value {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    .rtk-kpi-label {
+      font-size: 10px;
+      color: var(--text-low);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .rtk-kpi-savings .rtk-kpi-value { color: var(--accent-emerald); }
+    .rtk-kpi-pct     .rtk-kpi-value { color: var(--accent-cyan); }
+    .rtk-kpi-cmds    .rtk-kpi-value { color: var(--accent-violet); }
+    .rtk-kpi-speed   .rtk-kpi-value { color: var(--accent-amber); }
+
+    .rtk-efficiency-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .rtk-efficiency-label {
+      font-size: 11px;
+      color: var(--text-medium);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      min-width: 62px;
+    }
+    .rtk-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface-2);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .rtk-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+      border-radius: var(--radius-full);
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .rtk-efficiency-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-emerald);
+      min-width: 38px;
+      text-align: right;
+    }
+
+    .rtk-commands-table {
+      margin-bottom: 12px;
+    }
+    .rtk-table-header {
+      display: grid;
+      grid-template-columns: 28px 1fr 60px 80px 55px 60px;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--surface-2);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-medium);
+    }
+    .rtk-table-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 60px 80px 55px 60px;
+      gap: 8px;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .rtk-table-row:last-child { border-bottom: none; }
+    .rtk-table-row:hover { background: var(--surface-1); }
+    .rtk-rank {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .rtk-cmd-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-high);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rtk-cmd-count,
+    .rtk-cmd-saved,
+    .rtk-cmd-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-medium);
+      text-align: right;
+    }
+    .rtk-cmd-pct {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      text-align: right;
+    }
+    .rtk-cmd-pct.high   { color: var(--accent-emerald); }
+    .rtk-cmd-pct.medium { color: var(--accent-amber); }
+    .rtk-cmd-pct.low    { color: var(--text-low); }
+    .rtk-table-empty {
+      padding: 16px 10px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+    .rtk-gain-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-medium);
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    #rtk-verdict {
+      font-style: italic;
+    }
   </style>
+
 </head>
 <body>
 
@@ -1025,6 +1219,59 @@
         <div class="telemetry-header">Outils MCP <span>Tools</span></div>
         <div class="telemetry-metric" id="kpi-mcp" style="color: var(--accent-cyan);">0</div>
         <div class="telemetry-sub" id="kpi-mcp-sub">0 serveur(s) MCP</div>
+      </div>
+    </div>
+
+    <!-- RTK GAIN WIDGET -->
+    <div class="rtk-gain-panel" id="rtk-gain-panel">
+      <div class="rtk-gain-header">
+        <div class="rtk-gain-title">
+          <span class="rtk-gain-icon">⚡</span>
+          <div>
+            <div class="rtk-gain-name">RTK Token Savings <span class="rtk-gain-scope">Global</span></div>
+            <div class="rtk-gain-desc">Économies cumulées via les règles RTK (compression de sortie terminal)</div>
+          </div>
+        </div>
+        <div class="rtk-gain-kpis" id="rtk-gain-kpis">
+          <div class="rtk-kpi-card rtk-kpi-savings">
+            <div class="rtk-kpi-value" id="rtk-tokens-saved">—</div>
+            <div class="rtk-kpi-label">Tokens économisés</div>
+          </div>
+          <div class="rtk-kpi-card rtk-kpi-pct">
+            <div class="rtk-kpi-value" id="rtk-savings-pct">—</div>
+            <div class="rtk-kpi-label">Taux de compression</div>
+          </div>
+          <div class="rtk-kpi-card rtk-kpi-cmds">
+            <div class="rtk-kpi-value" id="rtk-total-cmds">—</div>
+            <div class="rtk-kpi-label">Commandes exécutées</div>
+          </div>
+          <div class="rtk-kpi-card rtk-kpi-speed">
+            <div class="rtk-kpi-value" id="rtk-avg-time">—</div>
+            <div class="rtk-kpi-label">Temps moyen</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rtk-efficiency-row">
+        <span class="rtk-efficiency-label">Efficiency</span>
+        <div class="rtk-bar-track">
+          <div class="rtk-bar-fill" id="rtk-bar-fill" style="width: 0%"></div>
+        </div>
+        <span class="rtk-efficiency-value" id="rtk-bar-pct">0%</span>
+      </div>
+
+      <div class="rtk-commands-table" id="rtk-commands-table">
+        <div class="rtk-table-header">
+          <span>#</span><span>Commande</span><span>Count</span><span>Économisé</span><span>Avg%</span><span>Temps</span>
+        </div>
+        <div id="rtk-commands-body">
+          <div class="rtk-table-empty">Chargement des données RTK...</div>
+        </div>
+      </div>
+
+      <div class="rtk-gain-footer" id="rtk-gain-footer">
+        <span id="rtk-verdict">—</span>
+        <button class="hud-btn" onclick="loadRtkGain()" style="font-size:11px; padding: 4px 10px;">🔄 Rafraîchir</button>
       </div>
     </div>
 
@@ -1519,9 +1766,71 @@
       pollInterval = setInterval(fetchMetrics, 2500);
     }
 
+    // ── RTK GAIN ────────────────────────────────────────────────────────────
+    async function loadRtkGain() {
+      try {
+        const res = await fetch('/api/rtk-gain');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        if (d.error) throw new Error(d.error);
+
+        // KPIs
+        document.getElementById('rtk-tokens-saved').textContent = formatNumber(d.tokensSaved);
+        document.getElementById('rtk-savings-pct').textContent   = d.savingsPct.toFixed(1) + '%';
+        document.getElementById('rtk-total-cmds').textContent    = d.totalCommands;
+        document.getElementById('rtk-avg-time').textContent      = d.avgExecMs + 'ms';
+
+        // Efficiency bar
+        const pct = Math.min(d.savingsPct, 100);
+        document.getElementById('rtk-bar-fill').style.width = pct + '%';
+        document.getElementById('rtk-bar-pct').textContent  = d.savingsPct.toFixed(1) + '%';
+
+        // Command table
+        const body = document.getElementById('rtk-commands-body');
+        if (d.commands.length === 0) {
+          body.innerHTML = '<div class="rtk-table-empty">Aucune commande RTK enregistrée.</div>';
+        } else {
+          body.innerHTML = d.commands.map(c => {
+            const pctClass = c.avgPct >= 60 ? 'high' : c.avgPct >= 20 ? 'medium' : 'low';
+            return `<div class="rtk-table-row">
+              <span class="rtk-rank">${c.rank}</span>
+              <span class="rtk-cmd-name" title="${escapeHtml(c.command)}">${escapeHtml(c.command)}</span>
+              <span class="rtk-cmd-count">${c.count}</span>
+              <span class="rtk-cmd-saved">${formatNumber(c.saved)}</span>
+              <span class="rtk-cmd-pct ${pctClass}">${c.avgPct.toFixed(1)}%</span>
+              <span class="rtk-cmd-time">${c.timeMs}ms</span>
+            </div>`;
+          }).join('');
+        }
+
+        // Verdict
+        let verdict;
+        if (d.totalCommands === 0) {
+          verdict = 'Aucune donnée — exécute quelques commandes RTK pour voir les gains.';
+        } else if (d.savingsPct >= 70) {
+          verdict = `✅ RTK très efficace — ${d.savingsPct.toFixed(1)}% de tokens économisés sur ${d.totalCommands} commande(s).`;
+        } else if (d.savingsPct >= 30) {
+          verdict = `⚡ RTK modérément utile — ${d.savingsPct.toFixed(1)}% économisé. Utilise plus rtk git/ls pour maximiser.`;
+        } else {
+          verdict = `⚠️ Gain faible (${d.savingsPct.toFixed(1)}%) — essaie rtk git status, rtk ls au lieu des commandes natives.`;
+        }
+        document.getElementById('rtk-verdict').textContent = verdict;
+      } catch (err) {
+        document.getElementById('rtk-commands-body').innerHTML =
+          `<div class="rtk-table-empty">Erreur RTK : ${escapeHtml(err.message)}</div>`;
+        document.getElementById('rtk-verdict').textContent = 'RTK non disponible ou aucune donnée.';
+        console.warn('RTK gain error:', err);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     // Initial load
     fetchMetrics();
     startPolling();
+    loadRtkGain();
   </script>
 </body>
 </html>

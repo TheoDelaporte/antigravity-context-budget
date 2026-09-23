@@ -56,6 +56,24 @@ function extractTag(text, tag) {
 }
 
 // ============================================================================
+// DÉTECTION DU PROCESSUS ANTIGRAVITY
+// ============================================================================
+/**
+ * Vérifie si Antigravity (agy) est actuellement en cours d'exécution.
+ * Utilise pgrep pour chercher le processus natif.
+ * @returns {boolean}
+ */
+function isAntigravityRunning() {
+  // Electron/Antigravity crée ce fichier au démarrage et le supprime à la fermeture.
+  // C'est le signal fiable d'une app Electron active, sans nécessiter d'accès aux processus système.
+  const devToolsPort = path.join(
+    os.homedir(),
+    'Library', 'Application Support', 'Antigravity', 'DevToolsActivePort'
+  );
+  return fs.existsSync(devToolsPort);
+}
+
+// ============================================================================
 // EXTRACTION TEMPS RÉEL (LIVE ANTIGRAVITY)
 // ============================================================================
 function getLiveMetrics() {
@@ -165,6 +183,17 @@ function getLiveMetrics() {
 function main() {
   try {
     const { maxContextBudget } = CONFIG;
+
+    // Vérifier d'abord si Antigravity est en cours d'exécution
+    if (!isAntigravityRunning()) {
+      console.log('🧠 — | color=gray');
+      console.log('---');
+      console.log('Antigravity non actif');
+      console.log('---');
+      console.log('🔄 Actualiser | refresh=true');
+      return;
+    }
+
     const live = getLiveMetrics();
 
     if (!live || live.total === 0) {
@@ -177,6 +206,7 @@ function main() {
       console.log('🔄 Actualiser | refresh=true');
       return;
     }
+
 
     // Détermination de la couleur selon le budget
     let barColor = 'purple';
